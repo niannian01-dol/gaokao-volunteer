@@ -3,6 +3,9 @@
 核心流程：**查询 → 结果展示 → 推荐**。三个页面，移动端优先，数据先用假数据跑通，
 正式数据通过 Excel/CSV 导入 Cloudflare D1。
 
+> **在线试玩（假数据演示）**：https://niannian01-dol.github.io/gaokao-volunteer/
+> 打开后会自动进入"本地演示模式"，直接用浏览器里的假数据算，不需要后端。
+
 > 当前 `public/data/*.json` 与 `schema/02_seed.sql` 里全部是**占位假数据**，
 > 只用于验证流程，不能用于真实志愿填报。
 
