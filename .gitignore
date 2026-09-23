@@ -1,0 +1,22 @@
+# 本地 Node 运行时（自带一份 Node + wrangler，约 270MB，不要提交）
+nodejs/
+node_modules/
+
+# wrangler 本地状态：本地 D1 数据库文件、缓存、登录凭据
+.wrangler/
+.dev.vars
+.env
+.env.*
+
+# 临时目录与数据库文件
+work/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# 编辑器 / 操作系统
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log

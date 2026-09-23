@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>冲稳保推荐 · 输入分数或位次生成志愿方案</title>
+    <meta name="theme-color" content="#2563eb" />
+    <link rel="stylesheet" href="./assets/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='23' font-size='19' text-anchor='middle' fill='white' font-family='sans-serif'%3E志%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="./index.html"><span class="logo">志</span>志愿通<small>高考志愿填报查询</small></a>
+        <nav class="topnav">
+          <a data-nav="index.html" href="./index.html">查询</a>
+          <a data-nav="results.html" href="./results.html">结果</a>
+          <a data-nav="recommend.html" href="./recommend.html">推荐</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="app">
+      <div id="mode-notice" class="notice" hidden></div>
+
+      <section class="card">
+        <div class="card-title">
+          <h2>生成冲稳保方案</h2>
+          <span class="sub">位次优先</span>
+        </div>
+        <form id="recommend-form" novalidate>
+          <div class="filters">
+            <div class="field">
+              <label for="province">省份</label>
+              <select id="province" name="province"></select>
+            </div>
+            <div class="field">
+              <label for="year">年份</label>
+              <select id="year" name="year"></select>
+            </div>
+            <div class="field">
+              <label for="subject">科类</label>
+              <select id="subject" name="subject"></select>
+            </div>
+            <div class="field">
+              <label for="batch">批次</label>
+              <select id="batch" name="batch"></select>
+            </div>
+          </div>
+
+          <div style="margin-top: 16px">
+            <div class="segmented" role="tablist">
+              <button type="button" data-mode="score" class="is-active">按分数</button>
+              <button type="button" data-mode="rank">按位次</button>
+            </div>
+            <div class="field" style="margin-top: 12px">
+              <label for="value-input" id="value-label">你的高考分数</label>
+              <input id="value-input" type="text" inputmode="numeric" placeholder="例如 600" />
+            </div>
+            <p class="small muted" id="value-hint" style="margin-top: 6px"></p>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">生成推荐</button>
+            <a class="btn btn-ghost" href="./index.html">先查分数线</a>
+          </div>
+        </form>
+      </section>
+
+      <div id="recommend-note"></div>
+      <div class="summary-bar" id="recommend-summary" style="margin-bottom: 14px"></div>
+      <div id="recommend-result"></div>
+      <div id="bucket-area"></div>
+
+      <section class="card" id="rules-card">
+        <div class="card-title"><h2>分档口径</h2></div>
+        <div class="small muted">
+          <p><b>位次法</b>（推荐）：gap =（该专业往年最低位次 − 你的位次）÷ max(你的位次, 500)</p>
+          <p>· −30% ≤ gap ≤ −8% → <span style="color: var(--chong)">冲</span>：往年录取位次比你靠前 8%~30%</p>
+          <p>· −8% &lt; gap ≤ 12% → <span style="color: var(--wen)">稳</span>：与你的位次相当，作为主力志愿</p>
+          <p>· 12% &lt; gap ≤ 45% → <span style="color: var(--bao)">保</span>：你的位次明显优于往年录取位次</p>
+          <p>· 超出这个范围的不再列出：差太远冲不上，或过于保守浪费志愿名额。</p>
+          <p style="margin-top: 10px"><b>分数法</b>（缺一分一段表时兜底）：与往年最低分相比，低 0～20 分为冲，高 0～12 分为稳，高出 12～30 分为保。</p>
+          <p style="margin-top: 10px">阈值可在 <code>public/assets/core.js</code> 的 <code>RANK_RULES</code> / <code>SCORE_RULES</code> 里调整。</p>
+        </div>
+      </section>
+
+      <footer class="footer">
+        推荐结果基于往年录取数据统计，仅供参考，不构成录取承诺。<br />
+        当前数据为占位假数据，仅用于验证流程。
+      </footer>
+    </main>
+
+    <nav class="tabbar">
+      <a data-nav="index.html" href="./index.html"><span class="ico">🔍</span>查询</a>
+      <a data-nav="results.html" href="./results.html"><span class="ico">📋</span>结果</a>
+      <a data-nav="recommend.html" href="./recommend.html"><span class="ico">🎯</span>推荐</a>
+    </nav>
+
+    <script type="module" src="./assets/app.js"></script>
+  </body>
+</html>

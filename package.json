@@ -1,0 +1,22 @@
+{
+  "name": "gaokao-volunteer-platform",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "高考志愿填报查询平台：分数/位次查询 + 冲稳保推荐（本地演示用假数据，生产用 Cloudflare Workers + D1）",
+  "scripts": {
+    "dev": "node dev-server.mjs",
+    "data:build": "node scripts/build-data.mjs",
+    "data:csv": "node scripts/csv-to-sql.mjs",
+    "d1:schema:local": "wrangler d1 execute gaokao --local --file=./schema/01_schema.sql",
+    "d1:seed:local": "wrangler d1 execute gaokao --local --file=./schema/02_seed.sql",
+    "verify:d1": "node scripts/verify-d1.mjs",
+    "d1:create": "wrangler d1 create gaokao",
+    "d1:schema": "wrangler d1 execute gaokao --remote --file=./schema/01_schema.sql",
+    "d1:seed": "wrangler d1 execute gaokao --remote --file=./schema/02_seed.sql",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

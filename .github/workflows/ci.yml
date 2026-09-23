@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: 语法检查 + 假数据 + D1 接口验证
+    runs-on: ubuntu-latest
+    env:
+      WRANGLER_SEND_METRICS: "false"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      # 项目本身零依赖，不用 npm install；wrangler 只在最后两步按需下载。
+      - name: 语法检查
+        run: |
+          node --check dev-server.mjs
+          node --check public/assets/app.js
+          node --check public/assets/core.js
+          node --check src/worker.js
+          node --check scripts/build-data.mjs
+          node --check scripts/csv-to-sql.mjs
+          node --check scripts/verify-d1.mjs
+          node --check scripts/lib/data-model.mjs
+
+      - name: 重新生成假数据，确认仓库里的产物是最新的
+        run: |
+          node scripts/build-data.mjs
+          git diff --exit-code -- public/data/admission.json public/data/score-segments.json schema/02_seed.sql
+
+      - name: 建表并灌入假数据（本地 D1，不需要 Cloudflare 账号）
+        run: |
+          npx --yes wrangler@4 d1 execute gaokao --local --file=./schema/01_schema.sql
+          npx --yes wrangler@4 d1 execute gaokao --local --file=./schema/02_seed.sql
+
+      - name: 验证查询 / 结果 / 推荐三个接口
+        run: node scripts/verify-d1.mjs

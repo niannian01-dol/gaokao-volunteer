@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>查询结果 · 院校专业最低分与最低位次</title>
+    <meta name="theme-color" content="#2563eb" />
+    <link rel="stylesheet" href="./assets/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='23' font-size='19' text-anchor='middle' fill='white' font-family='sans-serif'%3E志%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="./index.html"><span class="logo">志</span>志愿通<small>高考志愿填报查询</small></a>
+        <nav class="topnav">
+          <a data-nav="index.html" href="./index.html">查询</a>
+          <a data-nav="results.html" href="./results.html">结果</a>
+          <a data-nav="recommend.html" href="./recommend.html">推荐</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="app">
+      <div id="mode-notice" class="notice" hidden></div>
+
+      <section class="card">
+        <div class="card-title">
+          <h2>查询结果</h2>
+          <button class="btn btn-ghost btn-sm" type="button" id="toggle-filter">修改筛选条件</button>
+        </div>
+
+        <div id="filter-panel">
+          <form id="filter-form" novalidate>
+            <div class="filters">
+              <div class="field">
+                <label for="province">省份</label>
+                <select id="province" name="province"></select>
+              </div>
+              <div class="field">
+                <label for="year">年份</label>
+                <select id="year" name="year"></select>
+              </div>
+              <div class="field">
+                <label for="subject">科类</label>
+                <select id="subject" name="subject"></select>
+              </div>
+              <div class="field">
+                <label for="batch">批次</label>
+                <select id="batch" name="batch"></select>
+              </div>
+              <div class="field span-2">
+                <label for="university">院校名称</label>
+                <input id="university" name="university" type="search" placeholder="支持模糊匹配" />
+              </div>
+              <div class="field span-2">
+                <label for="major">专业名称</label>
+                <input id="major" name="major" type="search" placeholder="支持模糊匹配" />
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn btn-primary" type="submit">重新查询</button>
+              <a class="btn btn-ghost" id="to-recommend" href="./recommend.html">按分数/位次推荐 →</a>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <div class="summary-bar" id="summary" style="margin-bottom: 14px"></div>
+
+      <section class="card">
+        <div class="card-title" style="flex-wrap: wrap">
+          <div class="summary-bar" id="result-meta"></div>
+          <div class="actions" style="margin: 0; gap: 8px">
+            <select id="sort-select" style="width: auto; height: 34px; padding: 0 30px 0 10px; font-size: 13px"></select>
+            <select id="pagesize-select" style="width: auto; height: 34px; padding: 0 30px 0 10px; font-size: 13px">
+              <option value="20">每页 20 条</option>
+              <option value="50">每页 50 条</option>
+              <option value="100">每页 100 条</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>院校</th>
+                <th>专业</th>
+                <th>年份 / 批次</th>
+                <th>最低分</th>
+                <th>最低位次</th>
+                <th>招生计划</th>
+                <th>学费</th>
+              </tr>
+            </thead>
+            <tbody id="result-body"></tbody>
+          </table>
+        </div>
+
+        <div class="pager" id="pager"></div>
+      </section>
+
+      <footer class="footer">
+        最低分为该校该专业录取考生中的最低成绩，最低位次为对应的一分一段累计位次。<br />
+        当前数据为占位假数据，仅用于验证流程。
+      </footer>
+    </main>
+
+    <nav class="tabbar">
+      <a data-nav="index.html" href="./index.html"><span class="ico">🔍</span>查询</a>
+      <a data-nav="results.html" href="./results.html"><span class="ico">📋</span>结果</a>
+      <a data-nav="recommend.html" href="./recommend.html"><span class="ico">🎯</span>推荐</a>
+    </nav>
+
+    <script type="module" src="./assets/app.js"></script>
+  </body>
+</html>

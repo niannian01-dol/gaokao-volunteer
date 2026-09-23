@@ -1,0 +1,10 @@
+# 仓库里统一按 LF 存，检出时由 git 按平台转换，避免 Windows/Mac/Linux 之间来回改整文件
+* text=auto eol=lf
+
+# Windows 批处理必须是 CRLF，否则某些情况下会执行异常
+*.bat text eol=crlf
+
+# 二进制文件不要动换行
+*.png binary
+*.ico binary
+*.sqlite binary

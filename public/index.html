@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>高考志愿填报查询 · 院校专业分数线与位次</title>
+    <meta name="description" content="按省份、年份、科类、批次查询院校专业最低分与最低位次，并生成冲稳保三档志愿推荐。" />
+    <meta name="theme-color" content="#2563eb" />
+    <link rel="stylesheet" href="./assets/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='23' font-size='19' text-anchor='middle' fill='white' font-family='sans-serif'%3E志%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="./index.html"><span class="logo">志</span>志愿通<small>高考志愿填报查询</small></a>
+        <nav class="topnav">
+          <a data-nav="index.html" href="./index.html">查询</a>
+          <a data-nav="results.html" href="./results.html">结果</a>
+          <a data-nav="recommend.html" href="./recommend.html">推荐</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="app">
+      <div id="mode-notice" class="notice" hidden></div>
+
+      <section class="hero">
+        <h1>选科类、挑省份，一步查到分数线位次</h1>
+        <p>按省份、年份、科类、批次筛选，查看院校与专业的最低分、最低位次与招生计划。</p>
+        <div class="hero-stats">
+          <span>录取记录 <b id="stat-rows">—</b> 条</span>
+          <span>院校 <b id="stat-schools">—</b> 所</span>
+          <span>专业 <b id="stat-majors">—</b> 个</span>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">
+          <h2>筛选条件</h2>
+          <span class="sub">只填想限定的项即可</span>
+        </div>
+        <form id="query-form" novalidate>
+          <div class="filters">
+            <div class="field">
+              <label for="province">省份</label>
+              <select id="province" name="province"></select>
+            </div>
+            <div class="field">
+              <label for="year">年份</label>
+              <select id="year" name="year"></select>
+            </div>
+            <div class="field">
+              <label for="subject">科类</label>
+              <select id="subject" name="subject"></select>
+            </div>
+            <div class="field">
+              <label for="batch">批次</label>
+              <select id="batch" name="batch"></select>
+            </div>
+            <div class="field span-2">
+              <label for="university">院校名称</label>
+              <input id="university" name="university" type="search" placeholder="如：苏州大学（支持模糊匹配）" />
+            </div>
+            <div class="field span-2">
+              <label for="major">专业名称</label>
+              <input id="major" name="major" type="search" placeholder="如：计算机、临床医学" />
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">查询分数线</button>
+            <button class="btn btn-ghost" type="button" id="reset-btn">重置</button>
+            <button class="btn btn-ghost" type="button" id="to-recommend">按分数/位次推荐 →</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card" hidden>
+        <div class="card-title"><h2>最近查询</h2><span class="sub">保存在本机浏览器</span></div>
+        <div class="history-list" id="history-list"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-title"><h2>怎么用</h2></div>
+        <div class="small muted">
+          <p>1. 先按省份 / 年份 / 科类 / 批次查询院校专业的最低分和最低位次，定位自己的分数段。</p>
+          <p>2. 再到「推荐」页填写分数或位次，系统按位次法输出冲、稳、保三档学校。</p>
+          <p>3. 位次比分数更稳定：每年的题目难度不同，同一位次对应的分数会变化。</p>
+        </div>
+      </section>
+
+      <footer class="footer">
+        当前数据为占位假数据，仅用于跑通「查询 → 结果 → 推荐」流程。<br />
+        正式数据将以 Excel 导入 D1 数据库后替换。
+      </footer>
+    </main>
+
+    <nav class="tabbar">
+      <a data-nav="index.html" href="./index.html"><span class="ico">🔍</span>查询</a>
+      <a data-nav="results.html" href="./results.html"><span class="ico">📋</span>结果</a>
+      <a data-nav="recommend.html" href="./recommend.html"><span class="ico">🎯</span>推荐</a>
+    </nav>
+
+    <script type="module" src="./assets/app.js"></script>
+  </body>
+</html>
