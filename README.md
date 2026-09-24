@@ -53,6 +53,7 @@ gaokao-platform/
 │  ├─ build-data.mjs            # 重新生成假数据 + 种子 SQL
 │  ├─ csv-to-sql.mjs            # Excel/CSV → D1 SQL（真实数据入库用，含一分一段）
 │  ├─ verify-d1.mjs             # 不联网验证 D1 链路：查询 / 结果 / 推荐
+│  ├─ local-d1.mjs              # 把本地 D1 的 SQLite 包成 Worker 能用的接口（上面两个脚本共用）
 │  └─ lib/data-model.mjs        # 假数据模型（院校库、一分一段曲线参数）
 ├─ samples/                     # Excel/CSV 导入模板（列名照抄即可）
 ├─ dev-server.mjs               # 本地零依赖服务，实现与 Worker 相同的 /api
@@ -70,6 +71,14 @@ node scripts/verify-d1.mjs        # 用本地 D1 文件跑一遍 Worker 的 /api
 
 `verify-d1.mjs` 会直接加载 `src/worker.js`，把 wrangler 本地 D1 的 SQLite 文件套一层接口壳，
 所以线上那条「Worker 读 D1」的代码路径在本地就能验证，不需要任何账号。
+
+`node dev-server.mjs`（`npm run dev`）也会自己找本地 D1：库里有数据就直接读真数据
+（启动日志会打印「数据源：D1 本地库」和数据量），没导入过才退回 `public/data/*.json` 的假数据。
+想强制用假数据加 `--json`，只想托管静态页加 `--no-api`。所以「先灌 Excel 进本地 D1，再用浏览器看效果」
+这条路径不用改任何代码。
+
+验收脚本里的省份/年份/科类/批次不写死：它先读 `/api/meta`，再挑一组库里真实存在的条件，
+所以灌的是浙江真实数据就验浙江，是江苏假数据就验江苏。
 
 ## 接口约定（本地服务与 Worker 完全一致）
 
@@ -158,7 +167,10 @@ export const SCORE_RULES = { reachFloor: -20, steadyMax: 12, safetyCeil: 30 };
 - `-8% < gap ≤ 12%` → 稳
 - `12% < gap ≤ 45%` → 保
 
-超出范围的不列出：差太远冲不上，或过于保守浪费志愿名额。推荐候选池的位次窗口 `CANDIDATE_WINDOW` 与这两条边界保持一致。
+超出范围的不列出：差太远冲不上，或过于保守浪费志愿名额。
+`bucketRanges()` 把这三条边界翻译成三个位次区间，后端按档位分别查询——
+这一点很关键：如果只查「考生位次附近一整段」再整体 LIMIT，低分考生会先把位次靠前的学校排满额度，
+保底档直接空掉（真实数据导入后实测踩到过），按档位分开查才能保证三档都有结果。
 
 分数法（没有一分一段表时的兜底）：与往年最低分比较，低 0～20 分为冲，高 0～12 分为稳，高出 12～30 分为保。
 
@@ -184,6 +196,7 @@ export const SCORE_RULES = { reachFloor: -20, steadyMax: 12, safetyCeil: 30 };
 
 > **数据合规**：仓库里只有脚本生成的假数据。真实的投档线、一分一段数据来自各省教育考试院，
 > 转载和再分发有版权风险，请不要提交进公开仓库；用 `node scripts/csv-to-sql.mjs` 导入到自己的 D1 就行。
+> 生成出来的 `schema/03_import.sql`、`schema/04_segments.sql` 已经在 `.gitignore` 里，避免误提交。
 
 ---
 

@@ -313,6 +313,43 @@ export function candidateWindow(userRank) {
 }
 
 /**
+ * 冲/稳/保三档各自对应的位次区间，边界与 classify() 的规则逐字对齐。
+ * 后端按档位分别查询时用它，避免「只取考生位次附近一段」把某一档整档截断
+ * —— 低分考生位次靠后，靠前的学校一大堆，保底档会被 LIMIT 挤掉。
+ */
+export function bucketRanges(userRank) {
+  const rank = Number(userRank);
+  if (!Number.isFinite(rank) || rank <= 0) return null;
+  const denominator = Math.max(rank, RANK_RULES.minDenominator);
+  const at = (ratio) => rank + ratio * denominator;
+  const chongMax = Math.floor(at(RANK_RULES.reachMax));
+  const steadyMax = Math.floor(at(RANK_RULES.steadyMax));
+  return {
+    // 冲：往年录取位次比考生靠前 8%~30%
+    chong: { minRank: Math.max(1, Math.ceil(at(RANK_RULES.reachFloor))), maxRank: chongMax },
+    // 稳：与考生位次相当（-8%~+12%）
+    wen: { minRank: chongMax + 1, maxRank: steadyMax },
+    // 保：往年录取位次比考生低 12%~45%
+    bao: { minRank: steadyMax + 1, maxRank: Math.floor(at(RANK_RULES.safetyCeil)) },
+  };
+}
+
+/**
+ * 没有一分一段表时按分数差分的三档区间（diff = 考生分数 - 往年最低分），
+ * 与 SCORE_RULES 一致。区间下界/上界都取整数分数，避免出现半分开区间。
+ */
+export function scoreRanges(userScore) {
+  const score = Math.round(Number(userScore));
+  if (!Number.isFinite(score)) return null;
+  const { reachFloor, steadyMax, safetyCeil } = SCORE_RULES;
+  return {
+    chong: { minScore: score + 1, maxScore: score - reachFloor },
+    wen: { minScore: score - steadyMax, maxScore: score },
+    bao: { minScore: score - safetyCeil, maxScore: score - steadyMax - 1 },
+  };
+}
+
+/**
  * 生成冲/稳/保三档推荐。
  * @param {object} params
  * @param {Array}  params.rows      已按省份/年份/科类/批次过滤的录取记录

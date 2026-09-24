@@ -3,9 +3,13 @@
  *
  *   node dev-server.mjs            # http://127.0.0.1:8787
  *   node dev-server.mjs --port 9000
+ *   node dev-server.mjs --json     # 忽略本地 D1，强制用 data/*.json 里的假数据
+ *   node dev-server.mjs --no-api   # 只托管静态页，验证前端离线降级
+ *   node dev-server.mjs --lan      # 绑定所有网卡，同一 Wi-Fi 下的手机可访问
  *
- * 它实现了与 Cloudflare Worker 完全一致的 /api 接口，数据来自 data/*.json，
- * 所以先用假数据把"查询 -> 结果 -> 推荐"跑通，之后换 D1 只改 Worker。
+ * /api 接口与线上 Cloudflare Worker 完全一致（同一份 src/worker.js）：
+ *   - 本地 D1 里导入过数据（.wrangler/state/v3/d1/*.sqlite）就直接读 D1，页面看到真实数据；
+ *   - 没导入过则退回 public/data/*.json 假数据，仍能把「查询 -> 结果 -> 推荐」跑通。
  */
 
 import { createServer } from "node:http";
@@ -17,6 +21,8 @@ import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { buildRecommendations, deriveMeta, filterRows, queryRows, normalizeSegments } from "./public/assets/core.js";
+import { createD1, findLocalD1 } from "./scripts/local-d1.mjs";
+import worker from "./src/worker.js";
 
 const root = dirname(fileURLToPath(import.meta.url));
 const publicDir = join(root, "public");
@@ -30,6 +36,14 @@ const hostFlag = args.indexOf("--host");
 const HOST = args.includes("--lan") ? "0.0.0.0" : (hostFlag >= 0 ? args[hostFlag + 1] : process.env.HOST || "127.0.0.1");
 /** --no-api：只做静态托管，用来验证"没有后端时前端降级读 data/*.json"这条路径。 */
 const NO_API = args.includes("--no-api");
+/** --json：忽略本地 D1，强制走 public/data/*.json 的假数据。 */
+const FORCE_JSON = args.includes("--json");
+
+/* 数据源选择：本地 D1 优先，其次假数据 JSON。 */
+const localD1File = NO_API || FORCE_JSON ? null : findLocalD1();
+const DATA_SOURCE = localD1File ? "d1" : "json";
+const d1Handler = localD1File ? createD1(localD1File) : null;
+const ASSETS_STUB = { fetch: async () => new Response("not found", { status: 404 }) };
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -46,6 +60,7 @@ const MIME = {
 
 /* ------------------------------------------------------------------ */
 /* 数据加载（进程内缓存）                                                */
+/* 只在 DATA_SOURCE === "json" 时用到；走 D1 时这些文件根本不读。          */
 /* ------------------------------------------------------------------ */
 
 const cache = new Map();
@@ -87,6 +102,12 @@ function num(params, key) {
 }
 
 async function handleApi(url) {
+  /* D1 模式：直接复用 Worker 的接口实现，保证本地和线上行为一致。 */
+  if (DATA_SOURCE === "d1") {
+    const response = await worker.fetch(new Request(url.href), { DB: d1Handler, ASSETS: ASSETS_STUB });
+    return { status: response.status, body: await response.json() };
+  }
+
   const params = url.searchParams;
   const route = url.pathname.replace(/^\/api\/?/, "").replace(/\/$/, "") || "meta";
 
@@ -232,7 +253,6 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, HOST, async () => {
-  const stats = await loadStats();
   console.log(`高考志愿查询平台 · 本地演示服务`);
   console.log(`  本机：http://127.0.0.1:${PORT}`);
   if (HOST === "0.0.0.0") {
@@ -242,6 +262,22 @@ server.listen(PORT, HOST, async () => {
       }
     }
   }
-  console.log(`  数据：${stats.admissionRows} 条录取记录 / ${stats.universities} 所院校 / ${stats.majors} 个专业`);
+  if (DATA_SOURCE === "d1") {
+    try {
+      const res = await worker.fetch(new Request(`http://127.0.0.1:${PORT}/api/meta`), { DB: d1Handler, ASSETS: ASSETS_STUB });
+      const meta = await res.json();
+      console.log(`  数据源：D1 本地库 ${localD1File}`);
+      console.log(`  数据量：${meta.stats?.admissionRows} 条录取记录 / ${meta.stats?.universities} 所院校 / ${meta.stats?.majors} 个专业`);
+      console.log(`  可筛选：省份 ${(meta.provinces || []).join("/")} · 年份 ${(meta.years || []).join("/")}`);
+    } catch (error) {
+      console.log(`  数据源：D1 读取失败 —— ${error?.message || error}`);
+    }
+  } else if (NO_API) {
+    console.log(`  数据源：纯静态托管（--no-api），页面自己读 data/*.json 假数据`);
+  } else {
+    const stats = await loadStats();
+    console.log(`  数据源：data/*.json 假数据（本地 D1 还没有数据）`);
+    console.log(`  数据量：${stats.admissionRows} 条录取记录 / ${stats.universities} 所院校 / ${stats.majors} 个专业`);
+  }
   console.log(`  接口：/api/meta  /api/query  /api/recommend`);
 });

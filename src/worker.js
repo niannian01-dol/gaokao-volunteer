@@ -10,10 +10,10 @@
 
 import {
   buildRecommendations,
-  CANDIDATE_WINDOW,
-  candidateWindow,
+  bucketRanges,
   normalizeSegments,
   rankToScore,
+  scoreRanges,
   scoreToRank,
 } from "../public/assets/core.js";
 
@@ -63,8 +63,11 @@ const clampInt = (value, min, max, fallback) => {
   return Math.min(max, Math.max(min, Math.trunc(n)));
 };
 
-/** 把 query string 翻译成 WHERE 子句 + 绑定参数。 */
-function buildWhere(params, { withRankWindow = null } = {}) {
+/** 请求里解析出的一组分档区间最多取多少条原始记录。 */
+const PER_BAND_LIMIT = 400;
+
+/** 把 query string 翻译成 WHERE 子句 + 绑定参数；extra 用来追加自定义区间条件。 */
+function buildWhere(params, { extra = [] } = {}) {
   const clauses = [];
   const binds = [];
 
@@ -96,9 +99,9 @@ function buildWhere(params, { withRankWindow = null } = {}) {
     binds.push(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`, `%${keyword}%`, `%${keyword}%`);
   }
 
-  if (withRankWindow) {
-    clauses.push("a.min_rank BETWEEN ? AND ?");
-    binds.push(withRankWindow.minRank, withRankWindow.maxRank);
+  for (const [clause, ...values] of extra) {
+    clauses.push(clause);
+    binds.push(...values);
   }
 
   return { sql: clauses.length ? `WHERE ${clauses.join(" AND ")}` : "", binds };
@@ -208,16 +211,32 @@ async function handleRecommend(env, params) {
     return json({ error: "missing_input", message: "请提供 score 或 rank 参数" }, 400);
   }
 
-  const window = userRank != null ? candidateWindow(userRank) : null;
-  const { sql: where, binds } = buildWhere(params, { withRankWindow: window });
-  const { results } = await env.DB.prepare(
-    `SELECT ${SELECT_COLUMNS} ${FROM_SQL} ${where} ORDER BY a.min_rank ASC LIMIT ?`,
-  )
-    .bind(...binds, CANDIDATE_WINDOW.maxCandidates)
-    .all();
+  /*
+   * 三档分开查，每档各取一批：
+   * 如果只按「考生位次附近的一整段」查一次再 LIMIT，低分考生会先把位次靠前的
+   * 学校排满额度，保底档直接空掉（真实数据导入浙江后实测踩到），所以按档位切区间。
+   */
+  const rankBands = userRank != null ? bucketRanges(userRank) : null;
+  const bands = rankBands || scoreRanges(userScore);
+  const column = rankBands ? "a.min_rank" : "a.min_score";
+  const rangeOf = rankBands
+    ? (band) => [band.minRank, band.maxRank]
+    : (band) => [band.minScore, band.maxScore];
+
+  const batches = await env.DB.batch(
+    Object.values(bands).map((band) => {
+      const { sql: where, binds } = buildWhere(params, {
+        extra: [[`${column} BETWEEN ? AND ?`, ...rangeOf(band)]],
+      });
+      return env.DB.prepare(
+        `SELECT ${SELECT_COLUMNS} ${FROM_SQL} ${where} ORDER BY a.min_rank ASC LIMIT ?`,
+      ).bind(...binds, PER_BAND_LIMIT);
+    }),
+  );
+  const results = batches.flatMap((batch) => batch.results || []);
 
   const result = buildRecommendations({
-    rows: results || [],
+    rows: results,
     userRank,
     userScore,
     segments,
@@ -237,7 +256,7 @@ async function handleRecommend(env, params) {
     rules: result.rules,
     candidateCount: result.candidateCount,
     hasSegments: segments.length > 0,
-    window,
+    window: rankBands ? { minRank: rankBands.chong.minRank, maxRank: rankBands.bao.maxRank } : null,
     buckets,
   };
 }

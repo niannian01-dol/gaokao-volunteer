@@ -29,6 +29,7 @@ jobs:
           node --check src/worker.js
           node --check scripts/build-data.mjs
           node --check scripts/csv-to-sql.mjs
+          node --check scripts/local-d1.mjs
           node --check scripts/verify-d1.mjs
           node --check scripts/lib/data-model.mjs
 
