@@ -3,12 +3,15 @@
 核心流程：**查询 → 结果展示 → 推荐**。三个页面，移动端优先，数据先用假数据跑通，
 正式数据通过 Excel/CSV 导入 Cloudflare D1。
 
-> **在线试玩（假数据演示）**：https://niannian01-dol.github.io/gaokao-volunteer/
-> 打开后会自动进入"本地演示模式"，直接用浏览器里的假数据算，不需要后端。
+> **在线体验（真实数据 · 浙江 2017–2025）**：https://gaokao-volunteer.gaokao-niannian.workers.dev
+> 部署在 Cloudflare Workers + D1，后台含 20 万条真实录取记录，打开即用，手机上也能玩。
 
-> 当前 `public/data/*.json` 与 `schema/02_seed.sql` 里全部是**占位假数据**，
-> 只用于验证流程，不能用于真实志愿填报。
+> **假数据演示站（GitHub Pages）**：https://niannian01-dol.github.io/gaokao-volunteer/
+> 打开后自动进入"本地演示模式"，用浏览器里的假数据算，不需要后端。
 
+> 仓库内 `public/data/*.json` 与 `schema/02_seed.sql` 全部是**占位假数据**，只用于跑通流程；
+> 真实数据不进仓库（`schema/03_import.sql`、`schema/04_segments.sql` 已由 `.gitignore` 排除），
+> 线上真实数据只存在于 Cloudflare D1。假数据不能用于真实志愿填报。
 ## 快速开始（本地，无需安装任何依赖）
 
 ```bash
