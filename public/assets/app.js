@@ -95,6 +95,25 @@ function markLocalMode() {
   }
 }
 
+/**
+ * 底部说明跟着数据源走：
+ * 接口报 dataset=d1（本地服务读的是 D1 里的真实数据）就写真实数据量，
+ * 否则沿用假数据的提示文案，避免页面明明是真数据还写着"占位假数据"。
+ */
+function updateDataSourceNote(meta) {
+  const note = $("#data-source-note");
+  if (!note) return;
+  const stats = meta?.stats || {};
+  if (meta?.dataset === "d1") {
+    const provinces = (meta.provinces || []).join("/") || "—";
+    note.textContent =
+      `数据来自 D1 数据库：${formatNumber(stats.admissionRows)} 条录取记录 · ` +
+      `${formatNumber(stats.universities)} 所院校 · ${formatNumber(stats.majors)} 个专业（${provinces}）。`;
+  } else if (meta?.warning) {
+    note.textContent = String(meta.warning);
+  }
+}
+
 async function apiGet(route, params = {}) {
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
@@ -268,6 +287,7 @@ async function initQueryPage() {
   const meta = await apiGet("meta");
   populateFilters(meta, form, {});
   form.province.addEventListener("change", () => syncSubjectOptions(meta, form));
+  updateDataSourceNote(meta);
 
   const stats = meta.stats || {};
   const setText = (id, value) => {
@@ -347,6 +367,7 @@ async function initResultsPage() {
   if (!table) return;
 
   const meta = await apiGet("meta");
+  updateDataSourceNote(meta);
   const query = readQuery();
   const form = $("#filter-form");
   populateFilters(meta, form, query);
@@ -501,6 +522,7 @@ async function initRecommendPage() {
   if (!form) return;
 
   const meta = await apiGet("meta");
+  updateDataSourceNote(meta);
   const query = readQuery();
   populateFilters(meta, form, query);
   form.province.addEventListener("change", () => syncSubjectOptions(meta, form));
