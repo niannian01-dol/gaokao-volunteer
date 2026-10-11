@@ -102,7 +102,7 @@ gaokao-platform/
 ## 本地先跑通 D1 链路（不用登录 Cloudflare）
 
 ```bash
-node scripts/build-data.mjs       # 重新生成 public/data/*.json 与 schema/02_seed.sql（假数据）
+node scripts/build-data.mjs       # 生成假数据种子（⚠️ 会覆盖 public/data/*.json，验完用 git checkout -- public/data 还原）
 npx wrangler d1 execute gaokao --local --file=./schema/01_schema.sql
 npx wrangler d1 execute gaokao --local --file=./schema/02_seed.sql
 node scripts/verify-d1.mjs        # 用本地 D1 文件跑一遍 Worker 的 /api，逐项打勾
@@ -112,8 +112,8 @@ node scripts/verify-d1.mjs        # 用本地 D1 文件跑一遍 Worker 的 /api
 所以线上那条「Worker 读 D1」的代码路径在本地就能验证，不需要任何账号。
 
 `node dev-server.mjs`（`npm run dev`）也会自己找本地 D1：库里有数据就直接读真数据
-（启动日志会打印「数据源：D1 本地库」和数据量），没导入过才退回 `public/data/*.json` 的假数据。
-想强制用假数据加 `--json`，只想托管静态页加 `--no-api`。所以「先灌 Excel 进本地 D1，再用浏览器看效果」
+（启动日志会打印「数据源：D1 本地库」和数据量），没导入过才退回 `public/data/*.json`（仓库里自带的是浙江真数据）。
+想强制走静态数据加 `--json`，只想托管静态页加 `--no-api`。所以「先灌 Excel 进本地 D1，再用浏览器看效果」
 这条路径不用改任何代码。
 
 验收脚本里的省份/年份/科类/批次不写死：它先读 `/api/meta`，再挑一组库里真实存在的条件，
@@ -223,11 +223,12 @@ export const SCORE_RULES = { reachFloor: -20, steadyMax: 12, safetyCeil: 30 };
 本项目采用 **MIT 许可证**（见 [LICENSE](./LICENSE)），欢迎一起做。完整的参与说明见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
 
 - 报问题、提需求：用仓库的 Issues，模板已经准备好。
-- 提代码：Fork → 从 `main` 切分支 → 提 PR。CI 会自动跑语法检查、生成数据是否同步、以及 D1 接口验证。
+- 提代码：Fork → 从 `main` 切分支 → 提 PR。CI 会自动跑语法检查、真数据完整性校验、假数据种子同步、以及 D1 接口验证。
 - 上面这些检查本地都能自己跑，**不需要 Cloudflare 账号**：
 
   ```bash
   node scripts/build-data.mjs
+  node scripts/verify-static-data.mjs
   npx wrangler d1 execute gaokao --local --file=./schema/01_schema.sql
   npx wrangler d1 execute gaokao --local --file=./schema/02_seed.sql
   node scripts/verify-d1.mjs

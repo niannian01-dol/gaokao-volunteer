@@ -28,6 +28,7 @@ node dev-server.mjs --lan    # 手机连同一个 Wi-Fi 也能打开
 
 ```bash
 node scripts/build-data.mjs   # 改了假数据生成逻辑就重新生成
+node scripts/verify-static-data.mjs   # 校验 public/data 里的真数据（条数 / 结构 / 页面资源）
 node scripts/verify-d1.mjs    # 验证 D1 接口链路（查询 / 结果 / 推荐）
 ```
 
@@ -49,10 +50,13 @@ npx wrangler d1 execute gaokao --local --file=./schema/02_seed.sql
 
 ## 数据规则（重要）
 
-- 仓库里只放**脚本生成的假数据**。`public/data/*.json` 和 `schema/02_seed.sql` 都由
-  `node scripts/build-data.mjs` 生成，改了生成逻辑要重新生成并一起提交（CI 会检查是否同步）。
-- **真实录取数据不要提交进仓库。** 投档线、一分一段这些数据来自各省教育考试院，
-  转载和再分发有版权与合规风险。需要真实数据时用 `scripts/csv-to-sql.mjs` 导入到你自己的 D1，
+- 仓库里有两类数据，别搞混：
+  - `public/data/*.json`：**浙江 2017–2025 的真实录取数据**，由 `scripts/export-static.mjs` 从 D1 导出，
+    静态站直接读它。改动这些文件要在 PR 里说明数据来源，并跑 `node scripts/verify-static-data.mjs`（CI 会跑）。
+  - `schema/02_seed.sql`：`node scripts/build-data.mjs` 生成的**假数据**种子，只用于本地 / CI 的 D1 接口验证。
+    改了生成逻辑要重新生成并一起提交（CI 会检查是否同步）。
+- **其它省份的真实投档线、一分一段先不要提交进仓库。** 这些数据来自各省教育考试院，
+  转载和再分发有版权与合规风险。需要时用 `scripts/csv-to-sql.mjs` 导入到你自己的 D1，
   数据留在本地或私有数据库。
 - 不要提交任何账号凭据。`.wrangler/`、`.dev.vars`、`.env` 已在 `.gitignore` 里，请保持。
 - 改表结构要同时更新 `schema/01_schema.sql` 和 `schema/README.md`，两处必须一致。

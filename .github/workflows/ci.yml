@@ -8,7 +8,7 @@ on:
 
 jobs:
   verify:
-    name: 语法检查 + 假数据 + D1 接口验证
+    name: 语法检查 + 真数据校验 + D1 接口验证
     runs-on: ubuntu-latest
     env:
       WRANGLER_SEND_METRICS: "false"
@@ -26,17 +26,28 @@ jobs:
           node --check dev-server.mjs
           node --check public/assets/app.js
           node --check public/assets/core.js
+          node --check public/assets/university.js
+          node --check public/assets/submit.js
+          node --check public/assets/dorm-card.js
           node --check src/worker.js
           node --check scripts/build-data.mjs
           node --check scripts/csv-to-sql.mjs
+          node --check scripts/export-static.mjs
           node --check scripts/local-d1.mjs
           node --check scripts/verify-d1.mjs
+          node --check scripts/verify-static-data.mjs
           node --check scripts/lib/data-model.mjs
 
-      - name: 重新生成假数据，确认仓库里的产物是最新的
+      # public/data 里放的是 export-static.mjs 导出的浙江真数据，不是 build-data.mjs 生成的假数据，
+      # 所以这里直接读文件逐项校验（条数、结构、页面资源），而不是重新生成后比对。
+      - name: 校验仓库里的真实录取数据（public/data）
+        run: node scripts/verify-static-data.mjs
+
+      # 假数据仍然有用：下面的 D1 接口验证跑的就是它。这里只确认种子文件还是最新的。
+      - name: 确认假数据种子 schema/02_seed.sql 与脚本一致
         run: |
           node scripts/build-data.mjs
-          git diff --exit-code -- public/data/admission.json public/data/score-segments.json schema/02_seed.sql
+          git diff --exit-code -- schema/02_seed.sql
 
       - name: 建表并灌入假数据（本地 D1，不需要 Cloudflare 账号）
         run: |
