@@ -22,15 +22,42 @@ node dev-server.mjs --port 9000
 
 只用 Node 内置模块，不需要 `npm install`。启动后打开 http://127.0.0.1:8787 。
 
-## 三个页面
+## 页面
 
 | 页面 | 文件 | 做什么 |
 | --- | --- | --- |
 | 查询页 | `public/index.html` | 按省份 / 年份 / 科类 / 批次 / 院校 / 专业筛选，展示数据概览与最近查询 |
 | 结果页 | `public/results.html` | 展示每个院校专业的最低分、最低位次、招生计划、学费，支持排序与分页 |
 | 推荐页 | `public/recommend.html` | 输入分数或位次，输出冲 / 稳 / 保三档学校（按院校聚合，附可报专业） |
+| 院校详情页 | `public/university.html` | 点击院校名进入，展示院校基本信息与「宿舍条件」等就读体验文字信息 |
 
 移动端：底部标签栏切换页面，结果表在窄屏下自动变成卡片布局；桌面端恢复顶部导航 + 表格。
+
+## 宿舍条件（与分数/位次推荐解耦）
+
+`public/university.html?name=院校名` 展示一所院校的详细信息，宿舍条件以独立卡片呈现，
+和原来的分数 / 位次 / 专业推荐模块完全解耦，仅通过「院校名称 + 校区」关联。
+
+数据集中在 `public/data/university-info.json`，按「院校 → 校区」组织：
+
+- `universities[name].profile`：院校代码、省份、城市、层次、办学性质、标签。
+- `universities[name].campuses[campus]`：每个校区一条，含 `source`、`sourceUrl`、`updatedAt`、`verified`、`verifyCount`，以及 `sections.dormitory` 的字段值。
+- 无对应校区宿舍数据时，详情页显示「暂无宿舍信息，欢迎在校生投稿」并露出投稿入口。
+
+数据纪律（不可违反）：
+
+- 来源可追溯：每条数据必须注明来源与更新时间；`verified=true` 才显示「已核验」，否则显示「未核验 · 仅供参考」。
+- 严格区分校区：主键为「院校名称 + 校区」。
+- 同校区两条字段一致的投稿才会标记为可信（交叉核验）。
+- 禁止 AI 编造字段：脚本只做映射、清洗、合并，来源缺失的字段保持为空。
+- 「是否有晚自习」用字符串存储，支持「是【大一有】」格式。
+
+相关交付物：
+
+- 建表 SQL：`schema/10_life_info.sql`（`campus_life` + `life_submission`，独立于录取/推荐表）。
+- 合并清洗脚本：`scripts/merge-life-info.mjs`（CollegesChat / sushe.help / 投稿 → 统一字段 → 交叉核验 → 输出 JSON 与 SQL）。
+- 投稿表单：`public/submit.html`（提交到 `/api/submit`，写入 `life_submission`）。
+- 宿舍卡片组件：`public/assets/dorm-card.js`（由 `university.js` 挂载到详情页）。
 
 ## 目录结构
 
@@ -40,22 +67,30 @@ gaokao-platform/
 │  ├─ index.html                # 查询页
 │  ├─ results.html              # 结果页
 │  ├─ recommend.html            # 推荐页
+│  ├─ university.html           # 院校详情页
+│  ├─ submit.html               # 在校生宿舍信息投稿表单
 │  ├─ assets/
 │  │  ├─ core.js                # 共享核心逻辑：过滤/排序/分页/分数位次换算/冲稳保分档
 │  │  ├─ app.js                 # 页面逻辑 + 接口客户端（含无后端时的本地降级）
+│  │  ├─ university.js          # 院校详情页逻辑（读取 university-info.json）
+│  │  ├─ dorm-card.js           # 宿舍条件卡片组件（纯渲染）
+│  │  ├─ submit.js              # 投稿表单逻辑
 │  │  └─ styles.css             # 移动优先样式
 │  └─ data/                     # 前端直接读的数据（真数据按年份懒加载）
 │     ├─ admission-<省>-<年>.json  # 录取记录，如 admission-zhejiang-2025.json
 │     ├─ score-segments.json    # 一分一段表
+│     ├─ university-info.json   # 宿舍/生活信息（按院校 + 校区索引）
 │     └─ meta.json              # 筛选器选项 + 数据量统计
 ├─ src/worker.js                # Cloudflare Worker：/api/* + 静态资源
 ├─ schema/
 │  ├─ 01_schema.sql             # D1 建表（4 张表 + 索引）
 │  ├─ 02_seed.sql               # D1 假数据（按 4 张表自动生成）
+│  ├─ 10_life_info.sql          # 宿舍信息独立建表（campus_life + life_submission）
 │  └─ README.md                 # 每个字段的类型与注释
 ├─ scripts/
 │  ├─ build-data.mjs            # 重新生成假数据 + 种子 SQL
 │  ├─ csv-to-sql.mjs            # Excel/CSV → D1 SQL（真实数据入库用，含一分一段）
+│  ├─ merge-life-info.mjs       # 多来源宿舍信息合并/清洗/交叉核验
 │  ├─ verify-d1.mjs             # 不联网验证 D1 链路：查询 / 结果 / 推荐
 │  ├─ local-d1.mjs              # 把本地 D1 的 SQLite 包成 Worker 能用的接口（上面两个脚本共用）
 │  └─ lib/data-model.mjs        # 假数据模型（院校库、一分一段曲线参数）

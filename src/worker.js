@@ -261,6 +261,42 @@ async function handleRecommend(env, params) {
   };
 }
 
+/* --------------------------- /api/submit --------------------------- */
+
+/** 投稿字段（与前端 target 字段一致，禁止接受来源之外的字段）。 */
+const SUBMIT_FIELDS = [
+  "roommates", "lightsOut", "transport", "bedDesk", "morningExercise",
+  "eveningStudy", "bathroom", "airConditioner", "takeout", "canteen", "note",
+];
+
+async function handleSubmit(env, request) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return json({ error: "invalid_json", message: "请求体不是合法 JSON" }, 400);
+  }
+
+  const university = String(body?.university || "").trim();
+  const campus = String(body?.campus || "主校区").trim();
+  if (!university) return json({ error: "missing_field", message: "缺少院校名称" }, 400);
+
+  const payload = {};
+  for (const key of SUBMIT_FIELDS) {
+    const value = body?.[key];
+    if (value != null && String(value).trim() !== "") payload[key] = String(value).trim();
+  }
+  if (!Object.keys(payload).length) return json({ error: "empty_payload", message: "没有可提交的字段" }, 400);
+
+  const result = await env.DB.prepare(
+    "INSERT INTO life_submission (university_name, campus, payload, source, submitter) VALUES (?, ?, ?, '投稿', ?)",
+  )
+    .bind(university, campus, JSON.stringify(payload), String(body?.submitter || ""))
+    .run();
+
+  return json({ ok: true, id: result.meta?.last_row_id, persisted: true });
+}
+
 /* ------------------------------ 入口 ------------------------------ */
 
 export default {
@@ -277,6 +313,7 @@ export default {
       if (route === "meta") return json(await loadMeta(env));
       if (route === "query") return json(await handleQuery(env, url.searchParams));
       if (route === "recommend") return json(await handleRecommend(env, url.searchParams));
+      if (route === "submit") return json(await handleSubmit(env, request));
       return json({ error: "not_found", message: `未知接口 /api/${route}` }, 404);
     } catch (error) {
       return json({ error: "internal_error", message: String(error?.message || error) }, 500);

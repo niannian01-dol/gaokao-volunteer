@@ -875,3 +875,174 @@ select:focus {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* ------------------------------ 院校详情 ------------------------------ */
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 12px;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.school-hero {
+  padding: 20px 18px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  margin-bottom: 14px;
+}
+
+.school-hero h1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 21px;
+  margin-bottom: 12px;
+}
+
+.school-hero .summary-bar {
+  margin-bottom: 14px;
+}
+
+.school-hero-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.provenance-bar {
+  margin-bottom: 8px;
+}
+
+.provenance-verified {
+  border-color: color-mix(in srgb, var(--bao) 40%, transparent);
+  background: var(--bao-soft);
+  color: var(--bao);
+  font-weight: 600;
+}
+
+.provenance-unverified {
+  border-color: color-mix(in srgb, #f59e0b 45%, transparent);
+  background: color-mix(in srgb, #f59e0b 12%, transparent);
+  color: #b45309;
+  font-weight: 600;
+}
+
+.provenance-notice {
+  margin-top: 10px;
+}
+
+.info-yes {
+  color: var(--bao);
+  font-weight: 600;
+}
+
+.info-no {
+  color: var(--chong);
+  font-weight: 600;
+}
+
+.info-missing {
+  color: var(--muted);
+}
+
+.school-name-link {
+  color: var(--text);
+}
+
+.school-name-link:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+/* ------------------------------ 宿舍卡片 ------------------------------ */
+
+.campus-chip {
+  display: inline-block;
+  padding: 1px 8px;
+  margin-left: 6px;
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.dorm-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.dorm-cell {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--border);
+}
+
+.dorm-cell:last-child {
+  border-bottom: 0;
+}
+
+.dorm-label {
+  color: var(--muted);
+  font-size: 13px;
+  flex: 0 0 auto;
+}
+
+.dorm-value {
+  font-size: 14px;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.dorm-foot {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.required {
+  color: var(--chong);
+  font-weight: 700;
+}
+
+.dorm-link {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 0 7px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 1.9;
+  color: var(--primary);
+  background: var(--primary-soft);
+  font-weight: 500;
+  vertical-align: middle;
+}
+
+.dorm-link:hover {
+  border-color: var(--primary);
+}
+
+@media (min-width: 620px) {
+  .dorm-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 20px;
+  }
+
+  .dorm-cell {
+    padding: 10px 0;
+  }
+}

@@ -15,7 +15,7 @@
 import { createServer } from "node:http";
 import { gzipSync } from "node:zlib";
 import { networkInterfaces } from "node:os";
-import { readFile, stat } from "node:fs/promises";
+import { readFile, stat, appendFile, mkdir } from "node:fs/promises";
 import { extname, join, normalize, resolve, sep } from "node:path";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -44,6 +44,7 @@ const localD1File = NO_API || FORCE_JSON ? null : findLocalD1();
 const DATA_SOURCE = localD1File ? "d1" : "json";
 const d1Handler = localD1File ? createD1(localD1File) : null;
 const ASSETS_STUB = { fetch: async () => new Response("not found", { status: 404 }) };
+const submissionsFile = join(root, "work", "submissions.jsonl");
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -222,6 +223,58 @@ async function handleApi(url) {
 }
 
 /* ------------------------------------------------------------------ */
+/* 投稿                                                               */
+/* ------------------------------------------------------------------ */
+
+const SUBMIT_FIELDS = [
+  "roommates", "lightsOut", "transport", "bedDesk", "morningExercise",
+  "eveningStudy", "bathroom", "airConditioner", "takeout", "canteen", "note",
+];
+
+async function readBody(req) {
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  return Buffer.concat(chunks).toString("utf8");
+}
+
+function normalizeSubmission(body) {
+  const university = String(body?.university || "").trim();
+  const campus = String(body?.campus || "主校区").trim();
+  if (!university) return null;
+  const payload = {};
+  for (const key of SUBMIT_FIELDS) {
+    if (body?.[key] != null && String(body[key]).trim() !== "") payload[key] = String(body[key]).trim();
+  }
+  return { university, campus, payload };
+}
+
+async function handleSubmit(req, url) {
+  let body;
+  try {
+    body = JSON.parse((await readBody(req)) || "{}");
+  } catch {
+    return { status: 400, body: { error: "invalid_json", message: "请求体不是合法 JSON" } };
+  }
+  const submission = normalizeSubmission(body);
+  if (!submission) return { status: 400, body: { error: "missing_field", message: "缺少院校名称" } };
+  if (!Object.keys(submission.payload).length) return { status: 400, body: { error: "empty_payload", message: "没有可提交的字段" } };
+
+  if (DATA_SOURCE === "d1") {
+    const request = new Request(url.href, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const response = await worker.fetch(request, { DB: d1Handler, ASSETS: ASSETS_STUB });
+    return { status: response.status, body: await response.json() };
+  }
+
+  await mkdir(dirname(submissionsFile), { recursive: true });
+  await appendFile(submissionsFile, JSON.stringify({ ...submission, source: "投稿", created_at: new Date().toISOString() }) + "\n", "utf8");
+  return { status: 200, body: { ok: true, persisted: false, note: "本地演示模式，投稿仅写入 work/submissions.jsonl" } };
+}
+
+/* ------------------------------------------------------------------ */
 /* 静态资源                                                            */
 /* ------------------------------------------------------------------ */
 
@@ -258,6 +311,9 @@ const server = createServer(async (req, res) => {
     let result;
     if (NO_API && url.pathname.startsWith("/api/")) {
       result = { status: 404, type: "application/json; charset=utf-8", body: { error: "api_disabled" } };
+    } else if (url.pathname === "/api/submit" && req.method === "POST") {
+      result = await handleSubmit(req, url);
+      result.type = "application/json; charset=utf-8";
     } else if (url.pathname.startsWith("/api/")) {
       result = await handleApi(url);
       result.type = "application/json; charset=utf-8";

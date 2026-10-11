@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>院校详情 · 高考志愿填报查询</title>
+    <meta name="theme-color" content="#2563eb" />
+    <link rel="stylesheet" href="./assets/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='23' font-size='19' text-anchor='middle' fill='white' font-family='sans-serif'%3E志%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="./index.html"><span class="logo">志</span>志愿通<small>高考志愿填报查询</small></a>
+        <nav class="topnav">
+          <a data-nav="index.html" href="./index.html">查询</a>
+          <a data-nav="results.html" href="./results.html">结果</a>
+          <a data-nav="recommend.html" href="./recommend.html">推荐</a>
+          <a data-nav="submit.html" href="./submit.html">投稿</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="app">
+      <div id="mode-notice" class="notice" hidden></div>
+
+      <a class="back-link" id="back-link" href="./results.html">← 返回</a>
+
+      <div id="university-detail"></div>
+
+      <footer class="footer">
+        就读体验信息来自各校在校生/毕业生分享，仅供参考，请以学校官方发布为准。<br />
+        <span id="data-source-note">数据来源：各省教育考试院公开投档数据整理，仅供参考，请以官方发布为准。</span>
+      </footer>
+    </main>
+
+    <nav class="tabbar">
+      <a data-nav="index.html" href="./index.html"><span class="ico">🔍</span>查询</a>
+      <a data-nav="results.html" href="./results.html"><span class="ico">📋</span>结果</a>
+      <a data-nav="recommend.html" href="./recommend.html"><span class="ico">🎯</span>推荐</a>
+      <a data-nav="submit.html" href="./submit.html"><span class="ico">✍️</span>投稿</a>
+    </nav>
+
+    <script type="module" src="./assets/university.js"></script>
+  </body>
+</html>

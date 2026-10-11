@@ -1,0 +1,59 @@
+{
+  "generatedAt": "2026-10-11",
+  "policy": "每所院校必须注明来源、来源链接与更新时间；verified 为 true 才视为已核验。字段缺省或为空表示暂未收录。",
+  "sections": [
+    {
+      "key": "dormitory",
+      "title": "宿舍条件",
+      "icon": "🛏️",
+      "fields": [
+        { "key": "roommates", "label": "几人寝", "kind": "text" },
+        { "key": "lightsOut", "label": "熄灯 / 锁门", "kind": "text" },
+        { "key": "transport", "label": "出行、休闲是否方便", "kind": "text" },
+        { "key": "bedDesk", "label": "是否上床下桌", "kind": "yesno" },
+        { "key": "morningExercise", "label": "是否有早操", "kind": "yesno" },
+        { "key": "eveningStudy", "label": "是否有晚自习", "kind": "text" },
+        { "key": "bathroom", "label": "是否独立卫浴", "kind": "yesno" },
+        { "key": "airConditioner", "label": "是否独立空调", "kind": "yesno" },
+        { "key": "takeout", "label": "能否点外卖", "kind": "text" },
+        { "key": "canteen", "label": "食堂是否实惠好吃", "kind": "yesno" },
+        { "key": "note", "label": "额外描述", "kind": "text" }
+      ]
+    }
+  ],
+  "universities": {
+    "浙大宁波理工学院": {
+      "profile": {
+        "code": "0019",
+        "province": "浙江",
+        "city": "宁波市",
+        "type": "普通",
+        "nature": "公办",
+        "tags": "普通"
+      },
+      "campuses": {
+        "主校区": {
+          "verified": false,
+          "source": "「前辈帮帮我」小程序 · 用户核对",
+          "sourceUrl": "",
+          "updatedAt": "2026-10-11",
+          "verifyCount": 1,
+          "sections": {
+            "dormitory": {
+              "roommates": "普遍 4 人寝",
+              "lightsOut": "不锁门，但 0 点后算违规",
+              "transport": "是 · 学校北门有地铁",
+              "bedDesk": "是",
+              "morningExercise": "否",
+              "eveningStudy": "是【大一有】",
+              "bathroom": "是",
+              "airConditioner": "是",
+              "takeout": "是 · 校门口围栏和外卖柜",
+              "canteen": "是"
+            }
+          }
+        }
+      }
+    }
+  }
+}

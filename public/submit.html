@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>宿舍信息投稿 · 高考志愿填报查询</title>
+    <meta name="theme-color" content="#2563eb" />
+    <link rel="stylesheet" href="./assets/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563eb'/%3E%3Ctext x='16' y='23' font-size='19' text-anchor='middle' fill='white' font-family='sans-serif'%3E志%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="./index.html"><span class="logo">志</span>志愿通<small>高考志愿填报查询</small></a>
+        <nav class="topnav">
+          <a data-nav="index.html" href="./index.html">查询</a>
+          <a data-nav="results.html" href="./results.html">结果</a>
+          <a data-nav="recommend.html" href="./recommend.html">推荐</a>
+          <a data-nav="submit.html" href="./submit.html">投稿</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="app">
+      <div class="notice">
+        投稿会作为「在校生分享」主数据源保留；同一校区两条一致投稿才会标记为可信。请如实填写，勿编造。
+      </div>
+
+      <section class="card">
+        <div class="card-title"><h2>宿舍信息投稿</h2><span class="sub">严格区分校区</span></div>
+        <form id="submit-form" novalidate>
+          <div class="filters">
+            <div class="field span-2">
+              <label for="university">院校名称 <b class="required">*</b></label>
+              <input id="university" name="university" type="text" required placeholder="如：浙大宁波理工学院" />
+            </div>
+            <div class="field span-2">
+              <label for="campus">校区 <b class="required">*</b></label>
+              <input id="campus" name="campus" type="text" required value="主校区" placeholder="如：主校区 / 南校区" />
+            </div>
+
+            <div class="field">
+              <label for="roommates">几人寝</label>
+              <input id="roommates" name="roommates" type="text" placeholder="如：普遍 4 人寝" />
+            </div>
+            <div class="field">
+              <label for="lightsOut">熄灯 / 锁门</label>
+              <input id="lightsOut" name="lightsOut" type="text" placeholder="如：不锁门，但 0 点后算违规" />
+            </div>
+            <div class="field">
+              <label for="transport">出行、休闲是否方便</label>
+              <input id="transport" name="transport" type="text" placeholder="如：是 · 学校北门有地铁" />
+            </div>
+            <div class="field">
+              <label for="bedDesk">是否上床下桌</label>
+              <select id="bedDesk" name="bedDesk"><option value="">请选择</option><option>是</option><option>否</option></select>
+            </div>
+            <div class="field">
+              <label for="morningExercise">是否有早操</label>
+              <select id="morningExercise" name="morningExercise"><option value="">请选择</option><option>是</option><option>否</option></select>
+            </div>
+            <div class="field">
+              <label for="eveningStudy">是否有晚自习</label>
+              <input id="eveningStudy" name="eveningStudy" type="text" placeholder="如：是【大一有】" />
+            </div>
+            <div class="field">
+              <label for="bathroom">是否独立卫浴</label>
+              <select id="bathroom" name="bathroom"><option value="">请选择</option><option>是</option><option>否</option></select>
+            </div>
+            <div class="field">
+              <label for="airConditioner">是否独立空调</label>
+              <select id="airConditioner" name="airConditioner"><option value="">请选择</option><option>是</option><option>否</option></select>
+            </div>
+            <div class="field">
+              <label for="takeout">能否点外卖</label>
+              <input id="takeout" name="takeout" type="text" placeholder="如：是 · 校门口围栏和外卖柜" />
+            </div>
+            <div class="field">
+              <label for="canteen">食堂是否实惠好吃</label>
+              <select id="canteen" name="canteen"><option value="">请选择</option><option>是</option><option>否</option></select>
+            </div>
+            <div class="field span-2">
+              <label for="note">额外描述</label>
+              <input id="note" name="note" type="text" placeholder="补充说明（选填）" />
+            </div>
+          </div>
+
+          <div id="submit-result"></div>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">提交投稿</button>
+            <button class="btn btn-ghost" type="button" id="reset-btn">重置</button>
+          </div>
+          <p class="small muted" style="margin-top: 12px">
+            匿名投稿；我们只记录院校、校区与上述字段，用于交叉核验，不对外展示投稿人信息。
+          </p>
+        </form>
+      </section>
+
+      <footer class="footer">
+        投稿内容为在校生 / 毕业生个人分享，仅供参考，请以学校官方发布为准。
+      </footer>
+    </main>
+
+    <nav class="tabbar">
+      <a data-nav="index.html" href="./index.html"><span class="ico">🔍</span>查询</a>
+      <a data-nav="results.html" href="./results.html"><span class="ico">📋</span>结果</a>
+      <a data-nav="recommend.html" href="./recommend.html"><span class="ico">🎯</span>推荐</a>
+      <a data-nav="submit.html" href="./submit.html"><span class="ico">✍️</span>投稿</a>
+    </nav>
+
+    <script type="module" src="./assets/submit.js"></script>
+  </body>
+</html>

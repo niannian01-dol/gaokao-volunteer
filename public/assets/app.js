@@ -72,6 +72,9 @@ const pickFilters = (source) => {
   return out;
 };
 
+/** 院校详情页链接。 */
+const universityHref = (name) => `./university.html?${new URLSearchParams({ name }).toString()}`;
+
 /* --------------------- 接口客户端（带本地降级） --------------------- */
 
 const localCache = {};
@@ -403,7 +406,7 @@ function renderRows(rows, query) {
       (row) => `
       <tr>
         <td class="cell-school" data-label="院校">
-          <div class="name">${escapeHtml(row.university_name)} ${renderTags(row.university_tags)}</div>
+          <div class="name"><a class="school-name-link" href="${universityHref(row.university_name)}">${escapeHtml(row.university_name)}</a><a class="dorm-link" href="${universityHref(row.university_name)}#dorm">宿舍</a> ${renderTags(row.university_tags)}</div>
           <div class="loc">${escapeHtml(row.university_province || "")}${row.university_city ? ` · ${escapeHtml(row.university_city)}` : ""} · 院校代码 ${escapeHtml(row.university_code || "—")}</div>
         </td>
         <td class="cell-major" data-label="专业">
@@ -519,7 +522,7 @@ function renderSchoolCard(school, query, bucketKey) {
     <article class="school-card">
       <div class="head">
         <div>
-          <h3>${escapeHtml(school.university_name)} ${renderTags(school.university_tags)}</h3>
+          <h3><a class="school-name-link" href="${universityHref(school.university_name)}">${escapeHtml(school.university_name)}</a> ${renderTags(school.university_tags)}</h3>
           <div class="loc">${escapeHtml(school.university_province || "")}${school.university_city ? ` · ${escapeHtml(school.university_city)}` : ""} · ${escapeHtml(school.batch)} · ${escapeHtml(school.year)} 年</div>
         </div>
         <span class="pill" data-bucket="${bucketKey}">${escapeHtml(BUCKET_LABEL[bucketKey])}</span>
@@ -539,6 +542,7 @@ function renderSchoolCard(school, query, bucketKey) {
         ${more}
       </div>
       <div class="card-foot">
+        <a class="btn btn-ghost btn-sm" href="${universityHref(school.university_name)}#dorm">宿舍条件</a>
         <a class="btn btn-ghost btn-sm" href="${buildHref("results.html", { ...query, university: school.university_name })}">查看该校全部专业</a>
       </div>
     </article>`;
